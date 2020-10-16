@@ -21,5 +21,8 @@ public class Department {
     private Teacher chief;
 
     @OneToMany(mappedBy = "department")
-    private Set<DepartmentPage> departmentPages = new LinkedHashSet<>();
+    private Set<DepartmentPage> pages = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "department")
+    private Set<DepartmentSection> sections = new LinkedHashSet<>();
 }

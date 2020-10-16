@@ -15,9 +15,6 @@ public class Album {
     @GeneratedValue
     private Long id;
 
-    @OneToMany
-    private Set<Post> posts = new LinkedHashSet<>();
-
     private String name;
 
     @ElementCollection(fetch = FetchType.EAGER)
@@ -25,6 +22,16 @@ public class Album {
 
     @Transient
     private String lastImage;
+
+    public boolean isEmpty() {
+        return images.isEmpty();
+    }
+
+    public String getAlt(String url) {
+        url = url.substring(url.lastIndexOf("/") + 1);
+        if(url.contains(".")) url = url.substring(0, url.indexOf("."));
+        return url;
+    }
 
     @PostLoad
     public void postLoad() {
