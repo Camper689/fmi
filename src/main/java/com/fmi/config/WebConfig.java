@@ -20,6 +20,10 @@ public class WebConfig extends WebMvcConfigurerAdapter {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        //registry.addResourceHandler("/**", "classpath:/static/");
+
+        registry.addResourceHandler("/particlesjs-config.json", "forward:/js/particlesjs-config.json");
+
         registry.addResourceHandler("/img/**")
                 .addResourceLocations("classpath:/static/img/");
 

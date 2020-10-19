@@ -3,9 +3,7 @@ package com.fmi.domain;
 import lombok.Data;
 
 import javax.persistence.*;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Data
@@ -17,29 +15,24 @@ public class Album {
 
     private String name;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    private Set<String> images = new LinkedHashSet<>();
+    private final static Comparator<Image> imageSetComparator = Comparator.comparing(Image::getId).reversed();
 
-    @Transient
-    private String lastImage;
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "album")
+    private Set<Image> images = new TreeSet<>(imageSetComparator);
+
+    @OneToOne
+    private Image lastImage;
 
     public boolean isEmpty() {
-        return images.isEmpty();
+        return lastImage == null;
     }
 
-    public String getAlt(String url) {
-        url = url.substring(url.lastIndexOf("/") + 1);
-        if(url.contains(".")) url = url.substring(0, url.indexOf("."));
-        return url;
-    }
-
-    @PostLoad
-    public void postLoad() {
-        if(!images.isEmpty()) {
-            Iterator<String> iterator = images.iterator();
-            while (iterator.hasNext()) {
-                lastImage = iterator.next();
-            }
-        }
+    @Override
+    public String toString() {
+        return "Album{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", lastImage=" + (lastImage == null ? null : lastImage.getId()) +
+                '}';
     }
 }

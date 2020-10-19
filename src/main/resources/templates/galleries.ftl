@@ -1,14 +1,16 @@
 <#import "parts/common.ftl" as common><@common.html 'Галерея'>
+    <ul id="breadcrumbs" class="breadcrumbs">
+        <li><a href="/"><i class="fa fa-home"></i></a></li>
+        <li class="current">Галерея</li>
+    </ul>
+
     <div class="block block-margin">
-        <#if successMessage??>
-        <#elseif !errorMessage??>
-        hey
-        </#if>
+        <#include "parts/messages.ftl" />
 
         <div class="album-list">
             <ul>
                 <li>
-                    <a href="javascript:void(0)" onclick="$('#addAlbumModal').modal()">
+                    <a href="javascript:void(0)" onclick="modal('#addAlbumModal', null)">
                         <div class="album-cover">
                             <img src="/img/add-album.png" alt="Додати альбом" />
                             <div class="album-cover-title">Додати альбом</div>
@@ -20,14 +22,16 @@
                     <a href="/gallery/${album.id?c}">
                         <div class="album-cover">
                             <#if !album.isEmpty()>
-                                <img src="${album.lastImage}" alt="${album.getAlt(lastImage)}" />
+                                <img src="/image/${album.lastImage.getFullName()}" alt="${album.lastImage.getAlt()}" />
                             </#if>
                             <div class="album-cover-title">${album.name?html}</div>
                         </div>
                     </a>
-                    <a href="javascript:void(0)">
-                        <i class="fas fa-pen"></i>
+                    <a href="javascript:void(0)" onclick="modal('#editAlbumModal', {name: '', id: '${album.id?c}'})">
                         Змінити назву
+                    </a>
+                    <a href="javascript:void(0)" class="text-danger" onclick="modal('#deleteAlbumModal', {name: '${album.name?html}', id: '${album.id?c}'})">
+                        Видалити альбом
                     </a>
                 </li>
                 </#list>
@@ -44,7 +48,15 @@
 
     <@common.createModal 'editAlbumModal' 'Редагувати альбом' 'Зберегти'>
         <@common.postForm '/album/edit'>
+            <input name="id" type="hidden">
             <input class="form-control" name="name" placeholder="Введіть назву альбома">
+        </@common.postForm>
+    </@common.createModal>
+
+    <@common.createModal 'deleteAlbumModal' 'Видалити альбом' 'Видалити'>
+        <@common.postForm '/album/delete'>
+            <input name="id" type="hidden">
+            Ви точно хочете видалити альбом &quot;<span name="name"></span>&quot;?
         </@common.postForm>
     </@common.createModal>
 </@common.html>

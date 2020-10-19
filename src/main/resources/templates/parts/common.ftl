@@ -1,31 +1,43 @@
-<#macro html title=''>
+<#macro html title='' quill=false>
 <!DOCTYPE html>
 <html>
 <head>
     <title><#if title != ''>${title} | </#if>Факультет математики та інформатики</title>
     <meta content="Сайт факультету математики та інформатики РДГУ" name="description"/>
-    <link rel="stylesheet" media="all" href="/css/bootstrap.css" data-turbolinks-track="true"/>
-    <script src="/js/init.js" data-turbolinks-track="true"></script>
-    <script src="/js/ckeditor.js"></script>
+
+    <link rel="stylesheet" href="/css/bootstrap.css">
+
+    <script src="/js/jquery.js"></script>
+    <script src="/js/popper.js"></script>
+    <script src="/js/bootstrap.js"></script>
+
+    <#if quill>
+    <link rel="stylesheet" href="//cdn.quilljs.com/1.3.6/quill.snow.css">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    </#if>
+
+    <link rel="stylesheet" href="/css/magnific-popup.css" />
+    <script src="/js/jquery.magnific-popup.min.js"></script>
+
+    <script src="/js/particles-js.js"></script>
 </head>
 <body>
-<#include "header.ftl">
-<div class="wrapper">
-    <ul id="breadcrumbs" class="breadcrumbs">
-        <li><a href="/"><i class="fa fa-home"></i></a></li>
-        <li class="current">Галерея</li>
-    </ul>
+    <#include "header.ftl">
 
-    <#nested />
-</div>
-<#include "footer.ftl" />
+    <div class="wrapper">
+        <#nested />
+    </div>
+
+    <#if quill><#include "quill.ftl" /></#if>
+
+    <#include "footer.ftl" />
 </body>
 </html>
 </#macro>
 
 <#macro createModal id="" title="" submitButton="">
 <div class="modal fade" id="${id}" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">${title}</h5>
@@ -45,8 +57,8 @@
 </div>
 </#macro>
 
-<#macro postForm action id = ''>
-    <form method="post" action="${action}" <#if id != ''>id="${id}"</#if>>
+<#macro postForm action id = '' enctype=''>
+    <form method="post" action="${action}"<#if id != ''> id="${id}"</#if><#if enctype != ''> enctype="${enctype}"</#if>>
         <#nested>
     </form>
 </#macro>

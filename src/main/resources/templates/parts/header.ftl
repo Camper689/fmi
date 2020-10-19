@@ -80,7 +80,7 @@
                             class="fa fa-graduation-cap"></i> Абітурієнту</a></li>
                     <li><a class="main-item" href="/departments"><i class="fa fa-users"></i> Кафедри</a></li>
                     <li><a class="main-item" href="/posts"><i class="fa fa-newspaper-o"></i> Новини</a></li>
-                    <li><a class="main-item" href="/galleries"><i class="fa fa-picture-o"></i> Галерея</a></li>
+                    <li><a class="main-item" href="/gallery"><i class="fa fa-picture-o"></i> Галерея</a></li>
                 </ul>
             </div>
         </nav>

@@ -17,12 +17,8 @@ public class DepartmentSection {
     @ManyToOne(fetch = FetchType.LAZY)
     private Department department;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private DepartmentSection section;
+    private String name;
 
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "section")
-    private List<DepartmentSection> subSections = new ArrayList<>();
-
-    @OneToMany(mappedBy = "section")
+    @OneToMany(mappedBy = "section", fetch = FetchType.LAZY)
     private List<DepartmentPage> pages = new ArrayList<>();
 }
