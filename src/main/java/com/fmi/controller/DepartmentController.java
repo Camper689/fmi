@@ -1,12 +1,14 @@
 package com.fmi.controller;
 
 import com.fmi.domain.Department;
+import com.fmi.domain.Group;
+import com.fmi.domain.Teacher;
 import com.fmi.domain.TeacherStatus;
 import com.fmi.service.DepartmentService;
 import com.fmi.service.GroupService;
 import com.fmi.service.TeacherService;
+import com.fmi.service.TimetableService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +23,9 @@ public class DepartmentController {
 
     @Autowired
     private DepartmentService departmentService;
+
+    @Autowired
+    private TimetableService timetableService;
 
     @Autowired
     private TeacherService teacherService;
@@ -55,6 +60,15 @@ public class DepartmentController {
         return "timetables";
     }
 
+    @GetMapping("/groups/{group}")
+    public String groupTimetable(
+            @PathVariable("group") Group group,
+            Model model
+    ) {
+        model.addAttribute("timetableGrid", timetableService.getTimetablesForGroup(group));
+        return "group";
+    }
+
     @GetMapping("/departments/{department}")
     public String viewDepartment(
             @PathVariable("department") Long id,
@@ -76,10 +90,12 @@ public class DepartmentController {
 
     @GetMapping("/teacher/{id}")
     public String viewTeacher(
-            @PathVariable("id") Long id,
+            @PathVariable("id") Teacher teacher,
             Model model
     ) {
-        teacherService.viewTeacherRequest(id, model);
+        teacherService.viewTeacherRequest(teacher.getId(), model);
+        model.addAttribute("timetableGrid", timetableService.getTimetablesForTeacher(teacher));
+
         return "teacher";
     }
 

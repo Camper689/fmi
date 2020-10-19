@@ -6,6 +6,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 
 @Entity
@@ -16,7 +17,7 @@ public class Timetable {
     @GeneratedValue
     private Long id;
 
-    private LocalDateTime dateTime;
+    private DayOfWeek day;
 
     @ManyToOne
     private Lesson lesson;
@@ -27,4 +28,8 @@ public class Timetable {
     @ManyToOne
     private Group group;
 
+    // Кожну неділю такі записи будуть видалятися
+    private boolean oneWeekOnly = false;
+
+    private int number = 1;
 }
