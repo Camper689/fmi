@@ -1,4 +1,4 @@
-<#import "parts/common.ftl" as common><@common.html 'Викладачі «' + department.name + '»' true>
+<#import "parts/common.ftl" as common><@common.html teacher.getFullName() true>
     <ul id="breadcrumbs" class="breadcrumbs">
         <li><a href="/"><i class="fa fa-home"></i></a></li>
         <li><a href="/departments">Кафедри</a></li>
@@ -54,16 +54,25 @@
                         </a>
                     </div>
                 </div>
+                <#assign days=["Понеділок","Вівторок","Середа","Четвер","П'ятниця","Субота"] />
                 <div class="teacher-page-timetable">
+                <#list days as d>
                     <div class="col-sm-4">
                         <div class="teacher-page-day-info">
-                            <div class="pull-left"><b>Понеділок</b></div>
+                            <div class="pull-left"><b>${d}</b></div>
                             <div class="pull-right text-gray">12.10.20</div>
                         </div>
-                        <div class="teacher-page-empty-day">
-                            <span class="text-gray">В цей день не викладає.</span>
+                        <div class="teacher-page-group">
+                            <ul>
+                                <li><b>ПМ-21</b> Історія України</li>
+                                <li><b>ПМ-21</b> Історія України</li>
+                                <li>Hahaha</li>
+                                <li>Hahaha</li>
+                                <li><b>ПМ-32</b> Історія України</li>
+                            </ul>
                         </div>
                     </div>
+                </#list>
                 </div>
             </div>
         </div>

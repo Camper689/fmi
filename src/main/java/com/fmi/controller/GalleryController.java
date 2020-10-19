@@ -1,13 +1,11 @@
 package com.fmi.controller;
 
 import com.fmi.service.AlbumService;
+import com.fmi.service.ImageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -16,6 +14,18 @@ public class GalleryController {
 
     @Autowired
     private AlbumService albumService;
+
+    @Autowired
+    private ImageService imageService;
+
+    @PostMapping("/image/upload")
+    @ResponseBody
+    public String uploadImage(
+            @RequestParam("image") MultipartFile image
+    ) {
+        String s = imageService.uploadApi(image);
+        return s == null ? "" : s;
+    }
 
     @GetMapping("/gallery")
     public String listGalleries(

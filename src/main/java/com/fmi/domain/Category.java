@@ -17,6 +17,7 @@ public class Category {
     @Column(unique = true)
     private String name;
 
-    @OneToMany(mappedBy = "category")
-    private Set<Post> posts = new HashSet<>();
+    public void setName(String name) {
+        this.name = name;
+    }
 }

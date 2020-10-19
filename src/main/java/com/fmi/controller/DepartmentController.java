@@ -1,9 +1,6 @@
 package com.fmi.controller;
 
-import com.fmi.domain.Department;
-import com.fmi.domain.Group;
-import com.fmi.domain.Teacher;
-import com.fmi.domain.TeacherStatus;
+import com.fmi.domain.*;
 import com.fmi.service.DepartmentService;
 import com.fmi.service.GroupService;
 import com.fmi.service.TeacherService;
@@ -11,10 +8,7 @@ import com.fmi.service.TimetableService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -97,6 +91,30 @@ public class DepartmentController {
         model.addAttribute("timetableGrid", timetableService.getTimetablesForTeacher(teacher));
 
         return "teacher";
+    }
+
+    @PostMapping("/timetables/set")
+    @ResponseBody
+    public String setTimetable(
+            @RequestParam(value = "id", required = false) Long id,
+            @RequestParam("group") Group group,
+            @RequestParam("lesson") Lesson lesson,
+            @RequestParam("teacher") Teacher teacher,
+            @RequestParam("oneWeekOnly") boolean oneWeekOnly,
+            RedirectAttributes redirectAttributes
+    ) {
+        RequestResult requestResult = timetableService.setRequest(id, group, lesson, teacher, oneWeekOnly);
+        return requestResult.isSuccess() ? "OK" : requestResult.getMessage();
+    }
+
+    @PostMapping("/timetables/delete")
+    @ResponseBody
+    public String deleteTimetable(
+            @RequestParam("id") Long id,
+            RedirectAttributes redirectAttributes
+    ) {
+        RequestResult requestResult = timetableService.deleteRequest(id);
+        return requestResult.isSuccess() ? "OK" : requestResult.getMessage();
     }
 
     @PostMapping("/departments/addTeacher")

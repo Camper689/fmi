@@ -33,12 +33,10 @@ public class ImageService {
         add("jpg");
         add("jpeg");
         add("png");
-        add("bmp");
-        add("tiff");
     }};
 
     @PostConstruct
-    private void createUploadDir() {
+    private void createUploadDirIfNotExists() {
         File file = new File(uploadPath);
         if(!file.exists()) file.mkdir();
     }
@@ -56,33 +54,59 @@ public class ImageService {
                 .toString();
     }
 
+    private ImageUploadResult checkFile(MultipartFile file) {
+        long size = file.getSize() / 1024;
+
+        if(size > maxSize) return ImageUploadResult.ERROR_LARGE_FILE;
+        if(!allowedExtensions.contains(getExtension(file.getOriginalFilename()))) return ImageUploadResult.ERROR_BAD_FILE_EXTENSION;
+
+        return null;
+    }
+
+    private Pair<File, Image> getNewFileAndImage(int hashLength, String filename) {
+        String prefix; File newFile;
+        do {
+            prefix = generateRandomString(hashLength);
+            newFile = new File(uploadPath + prefix + "__" + filename);
+            System.out.println("generated string " + prefix);
+        } while (newFile.exists());
+
+        Image image = new Image();
+        image.setPrefix(prefix);
+        image.setName(filename);
+
+        return Pair.of(newFile, image);
+    }
+
+    public String uploadApi(MultipartFile file) {
+        if(checkFile(file) != null) return null;
+        Pair<File, Image> result = getNewFileAndImage(10, file.getOriginalFilename());
+
+        try {
+            file.transferTo(result.getFirst());
+            imageRepo.save(result.getSecond());
+            return "/image/" + result.getSecond().getFullName();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    // Завантажує масив файлів і повертає пару <Результат, Масив сутностей>
+    // Масив сутностей треба зберегти
     public synchronized Pair<ImageUploadResult, List<Image>> saveToGallery(MultipartFile[] files) {
         for (MultipartFile file : files) {
-            long size = file.getSize() / 1024;
-            if(size > maxSize)
-                return Pair.of(ImageUploadResult.ERROR_LARGE_FILE, new ArrayList<>());
-
-            if(!allowedExtensions.contains(getExtension(file.getOriginalFilename())))
-                return Pair.of(ImageUploadResult.ERROR_BAD_FILE_EXTENSION, new ArrayList<>());
+            ImageUploadResult error = checkFile(file);
+            if(error != null) return Pair.of(error, new ArrayList<>());
         }
 
         List<Image> result = new ArrayList<>();
         for (MultipartFile file : files) {
-            File newFile;
-            String prefix;
-            do {
-                prefix = generateRandomString(10);
-                newFile = new File(uploadPath + prefix + "__" + file.getOriginalFilename());
-                System.out.println("generated string " + prefix);
-            } while (newFile.exists());
+            Pair<File, Image> newFileAndImage = getNewFileAndImage(9, file.getOriginalFilename());
 
             try {
-                file.transferTo(newFile);
-
-                Image image = new Image();
-                image.setPrefix(prefix);
-                image.setName(file.getOriginalFilename());
-                result.add(image);
+                file.transferTo(newFileAndImage.getFirst());
+                result.add(newFileAndImage.getSecond());
             } catch (IOException e) {
                 result.forEach(this::delete);
                 return Pair.of(ImageUploadResult.ERROR_SAVE, result);
@@ -92,32 +116,19 @@ public class ImageService {
         return Pair.of(ImageUploadResult.SUCCESS, result);
     }
 
-    public String getExtension(String filename) {
+    private String getExtension(String filename) {
         return filename.substring(filename.lastIndexOf('.') + 1);
     }
 
     public Pair<ImageUploadResult, Image> saveAvatar(MultipartFile avatar) {
-        long size = avatar.getSize() / 1024;
-        if(size > maxSize) return Pair.of(ImageUploadResult.ERROR_LARGE_FILE, new Image());
-        String extension = getExtension(avatar.getOriginalFilename());
-        if(!allowedExtensions.contains(extension)) return Pair.of(ImageUploadResult.ERROR_BAD_FILE_EXTENSION, new Image());
+        ImageUploadResult imageUploadResult = checkFile(avatar);
+        if(imageUploadResult != null) return Pair.of(imageUploadResult, new Image());
 
-        File newFile;
-        String prefix, newName;
-        do {
-            prefix = generateRandomString(5);
-            newName = "avatar" + "." + extension;
-            newFile = new File(uploadPath + prefix + "__" + newName);
-            System.out.println("generated string " + prefix);
-        } while (newFile.exists());
+        Pair<File, Image> avatarNew = getNewFileAndImage(5, "avatar");
 
         try {
-            avatar.transferTo(newFile);
-
-            Image image = new Image();
-            image.setPrefix(prefix);
-            image.setName(newName);
-            return Pair.of(ImageUploadResult.SUCCESS, image);
+            avatar.transferTo(avatarNew.getFirst());
+            return Pair.of(ImageUploadResult.SUCCESS, avatarNew.getSecond());
         } catch (IOException e) {
             return Pair.of(ImageUploadResult.ERROR_SAVE, new Image());
         }
