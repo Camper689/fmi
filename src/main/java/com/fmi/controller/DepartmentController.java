@@ -23,9 +23,6 @@ import javax.annotation.PostConstruct;
 public class DepartmentController {
 
     @Autowired
-    private FreeMarkerConfigurer configurer;
-
-    @Autowired
     private DepartmentService departmentService;
 
     @Autowired
@@ -283,10 +280,5 @@ public class DepartmentController {
                         "redirect:/departments/page?section=" + sectionId :
                         "redirect:/departments/page?department=" + departmentId :
                 "redirect:/departments/page?page=" + id;
-    }
-
-    @PostConstruct
-    public void init() throws TemplateModelException {
-        configurer.getConfiguration().setSharedVariable("navbarContent", "SSSSSSSSS");
     }
 }

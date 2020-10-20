@@ -1,4 +1,4 @@
-package com.fmi.service;
+package com.fmi.repo;
 
 import com.fmi.domain.Lesson;
 import org.springframework.data.jpa.repository.JpaRepository;

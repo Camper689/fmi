@@ -26,6 +26,9 @@ public class AlbumService {
     @Autowired
     private ImageService imageService;
 
+    @Autowired
+    private CacheService cacheService;
+
     public List<Album> getAllOrderByIdDesc() {
         return albumRepo.findAllByOrderByIdDesc();
     }
@@ -40,6 +43,8 @@ public class AlbumService {
         Album album = new Album();
         album.setName(name);
         albumRepo.save(album);
+
+        cacheService.albumAdded(album);
 
         return RequestResult.SUCCESS_ADDED;
     }
@@ -57,6 +62,8 @@ public class AlbumService {
         album.setName(name);
         albumRepo.save(album);
 
+        cacheService.albumEdited(album);
+
         return RequestResult.SUCCESS_EDITED;
     }
 
@@ -65,6 +72,8 @@ public class AlbumService {
         if(album == null) return RequestResult.ERROR_NOT_FOUND_BY_ID;
 
         album.getImages().forEach(imageService::delete);
+        cacheService.albumDeleted(id);
+
         return RequestResult.SUCCESS_DELETED;
     }
 

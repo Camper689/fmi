@@ -32,6 +32,9 @@ public class PostService {
     @Autowired
     private ImageService imageService;
 
+    @Autowired
+    private CacheService cacheService;
+
     public Page<Post> getPage(PageRequest pageable) {
         return postRepo.findAll(pageable);
     }
@@ -100,6 +103,8 @@ public class PostService {
         post.setDate(LocalDate.now());
         postRepo.save(post);
 
+        cacheService.postAdded(post);
+
         return post.getId();
     }
 
@@ -132,5 +137,9 @@ public class PostService {
 
     public List<Post> getSomeLastPosts(int number) {
         return postRepo.findAllByOrderByIdDesc().stream().limit(number).collect(Collectors.toList());
+    }
+
+    public List<Post> getAllOrderByIdDesc() {
+        return postRepo.findAllByOrderByIdDesc();
     }
 }
