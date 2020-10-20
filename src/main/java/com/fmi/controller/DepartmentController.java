@@ -5,15 +5,25 @@ import com.fmi.service.DepartmentService;
 import com.fmi.service.GroupService;
 import com.fmi.service.TeacherService;
 import com.fmi.service.TimetableService;
+import freemarker.ext.beans.BeansWrapper;
+import freemarker.template.TemplateModel;
+import freemarker.template.TemplateModelException;
+import freemarker.template.Version;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
+
+import javax.annotation.PostConstruct;
 
 @Controller
 public class DepartmentController {
+
+    @Autowired
+    private FreeMarkerConfigurer configurer;
 
     @Autowired
     private DepartmentService departmentService;
@@ -273,5 +283,10 @@ public class DepartmentController {
                         "redirect:/departments/page?section=" + sectionId :
                         "redirect:/departments/page?department=" + departmentId :
                 "redirect:/departments/page?page=" + id;
+    }
+
+    @PostConstruct
+    public void init() throws TemplateModelException {
+        configurer.getConfiguration().setSharedVariable("navbarContent", "SSSSSSSSS");
     }
 }

@@ -2,6 +2,7 @@ package com.fmi.service;
 
 import com.fmi.controller.RequestResult;
 import com.fmi.controller.ResourceNotFoundException;
+import com.fmi.domain.Album;
 import com.fmi.domain.Category;
 import com.fmi.domain.Image;
 import com.fmi.domain.Post;
@@ -17,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class PostService {
@@ -31,11 +33,11 @@ public class PostService {
     private ImageService imageService;
 
     public Page<Post> getPage(PageRequest pageable) {
-        return postRepo.findAllOrderByIdDesc(pageable);
+        return postRepo.findAll(pageable);
     }
 
     public void viewPostRequest(Long id, Model model) {
-        Post post = postRepo.findOne(id);
+        Post post = postRepo.findOneFetchAlbum(id);
         if(post == null) throw new ResourceNotFoundException();
 
         model.addAttribute("post", post);
@@ -75,6 +77,7 @@ public class PostService {
         if(category == null) return RequestResult.ERROR_NOT_FOUND_BY_ID;
 
         categoryRepo.delete(category);
+        return RequestResult.SUCCESS_DELETED;
     }
 
     public void setVisibleRequest(Post post) {
@@ -86,25 +89,21 @@ public class PostService {
         Pair<ImageUploadResult, List<Image>> iuResult = imageService.saveToGallery(new MultipartFile[]{image});
         if(iuResult.getFirst() == ImageUploadResult.SUCCESS) {
             post.setImage(iuResult.getSecond().get(0));
+            imageService.save(post.getImage());
             postRepo.save(post);
             return RequestResult.SUCCESS_EDITED;
         } else return RequestResult.valueOf(iuResult.getFirst());
     }
 
-    public RequestResult addRequest(String title, String body, Category category) {
-        title = title.trim(); body = body.trim();
-        if(title.isEmpty()) return RequestResult.ERROR_EMPTY;
-
+    public Long addRequest() {
         Post post = new Post();
-        post.setTitle(title);
-        post.setBody(body);
         post.setDate(LocalDate.now());
-        post.setCategory(category);
         postRepo.save(post);
-        return RequestResult.SUCCESS_ADDED;
+
+        return post.getId();
     }
 
-    public RequestResult editRequest(Long id, String title, String body, Category category) {
+    public RequestResult editRequest(Long id, String title, String body, Category category, Album album) {
         title = title.trim(); body = body.trim();
         if(title.isEmpty()) return RequestResult.ERROR_EMPTY;
 
@@ -114,6 +113,7 @@ public class PostService {
         post.setTitle(title);
         post.setBody(body);
         post.setCategory(category);
+        post.setAlbum(album);
         postRepo.save(post);
         return RequestResult.SUCCESS_EDITED;
     }
@@ -124,5 +124,13 @@ public class PostService {
 
         postRepo.delete(post);
         return RequestResult.SUCCESS_DELETED;
+    }
+
+    public Post getOneFetchAlbum(Long id) {
+        return postRepo.findOneFetchAlbum(id);
+    }
+
+    public List<Post> getSomeLastPosts(int number) {
+        return postRepo.findAllByOrderByIdDesc().stream().limit(number).collect(Collectors.toList());
     }
 }

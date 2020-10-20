@@ -1,9 +1,12 @@
 package com.fmi.controller;
 
+import com.fmi.domain.Album;
 import com.fmi.domain.Category;
 import com.fmi.domain.Post;
+import com.fmi.service.AlbumService;
 import com.fmi.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
@@ -19,14 +22,18 @@ public class PostController {
     @Autowired
     private PostService postService;
 
+    @Autowired
+    private AlbumService albumService;
+
     @GetMapping
     public String postList(
             @RequestParam(value = "page", required = false, defaultValue = "1") int page,
             Model model
     ) {
-        PageRequest pageable = new PageRequest(--page, 9, Sort.Direction.DESC);
+        PageRequest pageable = new PageRequest(--page, 9, Sort.Direction.DESC, "id");
 
-        model.addAttribute("allPosts", postService.getPage(pageable));
+        Page<Post> result = postService.getPage(pageable);
+        model.addAttribute("page", result);
         return "posts";
     }
 
@@ -40,17 +47,25 @@ public class PostController {
     }
 
     @GetMapping("/categories")
-    public String viewCategories() {
-        postService.getAllCategories();
+    public String viewCategories(
+            Model model
+    ) {
+        model.addAttribute("allCategories", postService.getAllCategories());
         return "categories";
     }
 
     @GetMapping("/update")
     public String editor(
-            @RequestParam(value = "id", required = false) Post post,
+            @RequestParam(value = "post") Long postId,
             Model model
     ) {
-        if(post != null) model.addAttribute("post", post);
+        Post post = postService.getOneFetchAlbum(postId);
+        if(post == null) throw new ResourceNotFoundException();
+
+        model.addAttribute("post", post);
+        model.addAttribute("allCategories", postService.getAllCategories());
+        model.addAttribute("allAlbums", albumService.getAllOrderByIdDesc());
+
         return "postEditor";
     }
 
@@ -61,7 +76,7 @@ public class PostController {
             RedirectAttributes redirectAttributes
     ) {
         postService.setImageRequest(post, image).write(redirectAttributes);
-        return "redirect:/posts/" + post.getId();
+        return "redirect:/posts/update?post=" + post.getId();
     }
 
     @PostMapping("/setVisible")
@@ -69,35 +84,33 @@ public class PostController {
             @RequestParam("id") Post post
     ) {
         postService.setVisibleRequest(post);
-        return "redirect:/posts/" + post.getId();
+        return "redirect:/posts/update?post=" + post.getId();
     }
 
     @PostMapping("/add")
     public String addPost(
-            @RequestParam("title") String title,
-            @RequestParam("body") String body,
-            @RequestParam("category") Category category,
             RedirectAttributes redirectAttributes
     ) {
-        postService.addRequest(title, body, category).write(redirectAttributes);
-        return "redirect:/posts";
+        return "redirect:/posts/update?post=" + postService.addRequest();
     }
 
-    @PostMapping("/edit")
-    public String editPost(
+    @PostMapping("/update")
+    public String updatePost(
             @RequestParam("id") Long id,
             @RequestParam("title") String title,
             @RequestParam("body") String body,
-            @RequestParam("category") Category category,
+            @RequestParam(value = "category", required = false) Category category,
+            @RequestParam(value = "album", required = false) Album album,
             RedirectAttributes redirectAttributes
     ) {
-        RequestResult write = postService.editRequest(id, title, body, category).write(redirectAttributes);
+        RequestResult write = postService.editRequest(id, title, body, category, album).write(redirectAttributes);
         if(!write.isSuccess()) {
             redirectAttributes.addFlashAttribute("title", title);
             redirectAttributes.addFlashAttribute("body", body);
         }
-        return "redirect:/posts/update?id=" + id;
+        return "redirect:/posts/update?post=" + id;
     }
+
     @PostMapping("/delete")
     public String deletePost(
             @RequestParam("id") Long id,
